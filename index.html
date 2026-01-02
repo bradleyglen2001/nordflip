@@ -1,0 +1,1939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NordFlip</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #2a2a2a;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Layout */
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            margin-bottom: 30px;
+            transition: grid-template-columns 0.3s ease;
+        }
+
+        .layout.hide-advanced {
+            grid-template-columns: 1fr;
+        }
+
+        /* Advanced Panel */
+        .advanced-panel {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 8px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .layout.hide-advanced .advanced-panel {
+            display: none;
+        }
+
+        .config-section {
+            margin-bottom: 25px;
+        }
+
+        .config-section h3 {
+            color: #FFB000;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: #ccc;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-family: 'Courier New', monospace;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #FFB000;
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #ffc733;
+        }
+
+        button.secondary {
+            background: #555;
+            color: #fff;
+        }
+
+        button.secondary:hover {
+            background: #666;
+        }
+
+        button.secondary.active {
+            background: #FFB000;
+            color: #000;
+        }
+
+        /* Preview Section */
+        .preview-section {
+            background: #0a0a0a;
+            padding: 40px;
+            border-radius: 8px;
+            min-height: 400px;
+        }
+
+        /* Solari Board */
+        .solari-board {
+            background: #0a0a0a;
+            border: 8px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 
+                0 0 40px rgba(0, 0, 0, 0.8),
+                inset 0 0 30px rgba(0, 0, 0, 0.5);
+            margin: 0 auto;
+            width: fit-content;
+            position: relative;
+        }
+
+        /* Row Container with delete button */
+        .row-container {
+            position: relative;
+            margin: 20px 0;
+        }
+
+        .display-row {
+            display: grid;
+            gap: 8px;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .display-row:hover {
+            transform: scale(1.02);
+        }
+
+        /* Delete Button Styling */
+        .delete-row-btn {
+            position: absolute;
+            right: -50px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #cc5555;
+            border: 2px solid #dd6666;
+            color: white;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.2s;
+            padding: 0;
+            line-height: 1;
+            box-shadow: 0 2px 8px rgba(204, 85, 85, 0.3);
+        }
+
+        .delete-row-btn:hover {
+            background: #dd4444;
+            border-color: #ee5555;
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 4px 12px rgba(221, 68, 68, 0.5);
+        }
+
+        .row-container:hover .delete-row-btn {
+            opacity: 1;
+        }
+
+        /* Add Row Button (circular green) */
+        .add-row-circle-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #5cb85c;
+            border: 2px solid #6cc36c;
+            color: white;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            box-shadow: 0 2px 8px rgba(92, 184, 92, 0.3);
+            transition: all 0.2s;
+            position: relative;
+            margin: 30px auto 0 0;
+            margin-left: -50px;
+        }
+
+        .add-row-circle-btn:hover {
+            background: #4cae4c;
+            border-color: #5cb85c;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(92, 184, 92, 0.5);
+        }
+
+        /* Insert Row Buttons (appear between rows) */
+        .insert-row-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #5cb85c;
+            border: 2px solid #6cc36c;
+            color: white;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            box-shadow: 0 2px 8px rgba(92, 184, 92, 0.3);
+            transition: all 0.2s;
+            opacity: 0;
+            position: relative;
+            margin: 10px 0 10px auto;
+            margin-right: -50px;
+        }
+
+        .insert-row-btn:hover {
+            background: #4cae4c;
+            border-color: #5cb85c;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(92, 184, 92, 0.5);
+        }
+
+        .row-container:hover + .insert-row-btn,
+        .separator-container:hover + .insert-row-btn,
+        .insert-row-btn:hover {
+            opacity: 1;
+        }
+
+        .insert-row-btn-top:hover,
+        .solari-board:hover .insert-row-btn-top {
+            opacity: 1;
+        }
+
+        .display-row::after {
+            content: '✏️ Click to edit';
+            position: absolute;
+            right: -120px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #FFB000;
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            opacity: 0;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .display-row:hover::after {
+            opacity: 1;
+        }
+
+        .flap {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 3px;
+            width: 60px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            font-weight: bold;
+            color: #FFB000;
+            text-shadow: 
+                0 0 10px rgba(255, 176, 0, 0.8),
+                0 0 20px rgba(255, 176, 0, 0.4);
+            box-shadow: 
+                inset 0 0 15px rgba(0, 0, 0, 0.8),
+                0 2px 5px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+        }
+
+        .flap::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #222;
+            z-index: 10;
+        }
+
+        .flap.space {
+            background: #1a1a1a;
+        }
+
+        @keyframes flip {
+            0% { transform: rotateX(0deg); }
+            50% { transform: rotateX(90deg); opacity: 0.3; }
+            100% { transform: rotateX(0deg); }
+        }
+
+        .flap.flipping {
+            animation: flip 0.3s ease-in-out;
+        }
+
+        .separator {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #FFB000 10%, #FFB000 90%, transparent);
+            margin: 30px 0;
+            box-shadow: 0 0 10px rgba(255, 176, 0, 0.5);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .separator:hover {
+            height: 4px;
+            box-shadow: 0 0 20px rgba(255, 176, 0, 0.8);
+        }
+
+        /* Separator delete button */
+        .separator-container {
+            position: relative;
+            margin: 30px 0;
+        }
+
+        .separator-container .delete-row-btn {
+            right: -50px;
+            top: 50%;
+        }
+
+        .separator-container:hover .delete-row-btn {
+            opacity: 1;
+        }
+
+        /* Add Row Button */
+        .add-row-button {
+            text-align: center;
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .add-row-button button {
+            font-size: 1.2em;
+            padding: 15px 40px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border: 2px solid #FFB000;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #FFB000;
+        }
+
+        .close-modal {
+            background: none;
+            color: #FFB000;
+            font-size: 2em;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .type-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .type-option {
+            padding: 15px;
+            background: #333;
+            border: 2px solid #555;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .type-option:hover {
+            border-color: #FFB000;
+        }
+
+        .type-option.active {
+            background: #FFB000;
+            color: #000;
+            border-color: #FFB000;
+        }
+
+        .type-option .icon {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .type-option .label {
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .row-settings {
+            display: none;
+        }
+
+        .row-settings.active {
+            display: block;
+        }
+
+        #static-two-column,
+        #rotating-two-column {
+            background: rgba(255, 176, 0, 0.05);
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 3px solid #FFB000;
+        }
+
+        .alignment-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .alignment-buttons button {
+            flex: 1;
+            padding: 10px;
+        }
+
+        .alignment-buttons button.active {
+            background: #FFB000;
+            color: #000;
+        }
+
+        /* URL Section */
+        .url-section {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .url-section.show {
+            display: block;
+        }
+
+        .url-section h3 {
+            color: #FFB000;
+            margin-bottom: 15px;
+        }
+
+        .url-display {
+            background: #333;
+            padding: 15px;
+            border-radius: 4px;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            border: 1px solid #555;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .advanced-panel {
+                position: relative;
+                top: 0;
+            }
+
+            .display-row::after {
+                display: none;
+            }
+
+            .delete-row-btn,
+            .insert-row-btn {
+                right: -40px !important;
+                margin-right: -40px !important;
+            }
+            
+            .add-row-circle-btn {
+                margin-right: -40px !important;
+            }
+        }
+
+        /* Back to Designer Link */
+        .back-to-designer {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: rgba(26, 26, 26, 0.9);
+            border: 2px solid #FFB000;
+            border-radius: 4px;
+            color: #FFB000;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 1000;
+            display: none;
+        }
+
+        .back-to-designer:hover {
+            background: #FFB000;
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 176, 0, 0.3);
+        }
+
+        .back-to-designer.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="layout hide-advanced" id="layout">
+            <!-- Preview Section -->
+            <div class="preview-section">
+                <div class="solari-board" id="board"></div>
+                <div class="add-row-button">
+                    <button class="secondary" onclick="generateURL()">💾 Save</button>
+                    <button class="secondary" onclick="previewBoard()">👁️ Preview</button>
+                    <button class="secondary" id="advancedToggle" onclick="toggleAdvanced()">⚙️ Advanced</button>
+                </div>
+            </div>
+
+            <!-- Advanced Panel -->
+            <div class="advanced-panel">
+                <div class="config-section">
+                    <h3>Grid Settings</h3>
+                    <label>Columns per row:</label>
+                    <input type="number" id="columns" value="20" min="5" max="50" oninput="validateAllRows(); generateBoard(); updateAllPreviews(); validateTimeSettings();">
+                    
+                    <label>Flap Width (px):</label>
+                    <input type="number" id="flapWidth" value="60" min="20" max="100" oninput="generateBoard()">
+                    
+                    <label>Flap Height (px):</label>
+                    <input type="number" id="flapHeight" value="80" min="30" max="120" oninput="generateBoard()">
+                    
+                    <label>Flip Speed (ms per character):</label>
+                    <input type="number" id="flipSpeed" value="50" min="10" max="500" step="10" oninput="generateBoard()">
+                    <small style="color: #888; display: block; margin-top: -5px; margin-bottom: 10px;">
+                        Lower = faster rotation (10-500ms)
+                    </small>
+                    
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-top: 10px;">
+                        <input type="checkbox" id="soundEnabled" checked style="width: auto; margin: 0;">
+                        <span>🔊 Flip sound effects</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- URL Section -->
+        <div class="url-section" id="url-section">
+            <h3>Your board has been saved!</h3>
+            <p style="color: #888; margin-bottom: 15px;">Share this URL - it opens as a clean, view-only board with no editing controls.</p>
+            <div class="url-display" id="url-display"></div>
+            <div class="button-group">
+                <button onclick="copyURL()">Copy URL</button>
+                <button class="secondary" onclick="openInNewTab()">Open in New Tab</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to Designer Link (shown in preview mode) -->
+    <a href="#" class="back-to-designer" id="backToDesigner" onclick="returnToDesigner(); return false;">
+        ← Back to Designer
+    </a>
+
+    <!-- Edit Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Row</h2>
+                <button class="close-modal" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <!-- Row Type Selector -->
+                <div class="type-selector" id="typeSelector">
+                    <div class="type-option" data-type="static" onclick="selectRowType('static')">
+                        <div class="icon">📝</div>
+                        <div class="label">Static Text</div>
+                    </div>
+                    <div class="type-option" data-type="rotating" onclick="selectRowType('rotating')">
+                        <div class="icon">🔄</div>
+                        <div class="label">Rotating Messages</div>
+                    </div>
+                    <div class="type-option" data-type="time" onclick="selectRowType('time')">
+                        <div class="icon">🕐</div>
+                        <div class="label">Clock</div>
+                    </div>
+                    <div class="type-option" data-type="separator" onclick="selectRowType('separator')">
+                        <div class="icon">━━</div>
+                        <div class="label">Separator</div>
+                    </div>
+                </div>
+
+                <!-- Static Text Settings -->
+                <div class="row-settings" id="settings-static">
+                    <!-- Two-column layout temporarily hidden -->
+                    <input type="checkbox" id="input-static-twocolumn" style="display: none;" onchange="toggleTwoColumnMode('static')">
+                    
+                    <div id="static-single-column">
+                        <label>Text:</label>
+                        <input type="text" id="input-static-text" placeholder="Enter your text">
+                    </div>
+                    
+                    <div id="static-two-column" style="display: none;">
+                        <!-- Live Preview -->
+                        <div style="background: #0a0a0a; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 2px solid #FFB000;">
+                            <label style="color: #FFB000; margin-bottom: 10px; display: block; font-size: 1.1em;">📺 Live Preview</label>
+                            
+                            <!-- Character ruler -->
+                            <div style="font-family: 'Courier New', monospace; font-size: 0.85em; color: #666; margin-bottom: 2px; user-select: none;">
+                                <span id="static-ruler-display"></span>
+                            </div>
+                            
+                            <!-- Preview text with split line -->
+                            <div style="position: relative; background: #1a1a1a; border-radius: 4px; padding: 8px 8px 8px 8px; overflow-x: auto;">
+                                <div style="font-family: 'Courier New', monospace; font-size: 1.3em; color: #FFB000; white-space: pre; position: relative;">
+                                    <span id="static-col1-preview" style="background: rgba(255, 176, 0, 0.1);"></span><span id="static-col2-preview" style="background: rgba(0, 176, 255, 0.1);"></span>
+                                </div>
+                                <!-- Vertical split line -->
+                                <div id="static-split-line" style="position: absolute; top: 0; bottom: 0; width: 3px; background: #FFB000; box-shadow: 0 0 10px rgba(255, 176, 0, 0.5);"></div>
+                            </div>
+                            
+                            <!-- Column info -->
+                            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.85em;">
+                                <div style="color: #FFB000;">
+                                    Column 1: <span id="static-col1-chars">0</span> chars (max <span id="static-col1-max">15</span>)
+                                </div>
+                                <div style="color: #00B0FF;">
+                                    Column 2: <span id="static-col2-chars">0</span> chars (max <span id="static-col2-max">5</span>)
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <label>Column 1 (Left side):</label>
+                        <input type="text" id="input-static-col1" placeholder="e.g., Detroit" oninput="updateStaticPreview()">
+                        
+                        <label>Column 2 (Right side):</label>
+                        <input type="text" id="input-static-col2" placeholder="e.g., 12:45" oninput="updateStaticPreview()">
+                        
+                        <label>
+                            Split Position: <span id="split-value-static" style="color: #FFB000; font-weight: bold;">15</span>
+                            <span style="color: #888; font-size: 0.9em;"> (column 1 gets this many characters)</span>
+                        </label>
+                        <input type="range" id="input-static-split" min="5" max="35" value="15" oninput="updateStaticPreview()" style="width: 100%; margin-bottom: 5px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.75em; color: #666; margin-bottom: 10px;">
+                            <span>5</span>
+                            <span>20</span>
+                            <span>35</span>
+                        </div>
+                    </div>
+                    
+                    <label>Alignment:</label>
+                    <div class="alignment-buttons">
+                        <button class="secondary" onclick="setAlignment('left')">⬅️ Left</button>
+                        <button class="secondary" onclick="setAlignment('center')">↔️ Center</button>
+                        <button class="secondary" onclick="setAlignment('right')">➡️ Right</button>
+                    </div>
+                </div>
+
+                <!-- Rotating Messages Settings -->
+                <div class="row-settings" id="settings-rotating">
+                    <!-- Two-column layout temporarily hidden -->
+                    <input type="checkbox" id="input-rotating-twocolumn" style="display: none;" onchange="toggleTwoColumnMode('rotating')">
+                    
+                    <div id="rotating-single-column">
+                        <label>Messages (one per line):</label>
+                        <textarea id="input-rotating-messages" rows="4" placeholder="Message 1
+Message 2
+Message 3"></textarea>
+                    </div>
+                    
+                    <div id="rotating-two-column" style="display: none;">
+                        <!-- Live Preview -->
+                        <div style="background: #0a0a0a; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 2px solid #FFB000;">
+                            <label style="color: #FFB000; margin-bottom: 10px; display: block; font-size: 1.1em;">📺 Live Preview (first line)</label>
+                            
+                            <!-- Character ruler -->
+                            <div style="font-family: 'Courier New', monospace; font-size: 0.85em; color: #666; margin-bottom: 2px; user-select: none;">
+                                <span id="rotating-ruler-display"></span>
+                            </div>
+                            
+                            <!-- Preview text with split line -->
+                            <div style="position: relative; background: #1a1a1a; border-radius: 4px; padding: 8px 8px 8px 8px; overflow-x: auto;">
+                                <div style="font-family: 'Courier New', monospace; font-size: 1.3em; color: #FFB000; white-space: pre; position: relative;">
+                                    <span id="rotating-col1-preview" style="background: rgba(255, 176, 0, 0.1);"></span><span id="rotating-col2-preview" style="background: rgba(0, 176, 255, 0.1);"></span>
+                                </div>
+                                <!-- Vertical split line -->
+                                <div id="rotating-split-line" style="position: absolute; top: 0; bottom: 0; width: 3px; background: #FFB000; box-shadow: 0 0 10px rgba(255, 176, 0, 0.5);"></div>
+                            </div>
+                            
+                            <!-- Column info -->
+                            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.85em;">
+                                <div style="color: #FFB000;">
+                                    Column 1: <span id="rotating-col1-chars">0</span> chars (max <span id="rotating-col1-max">15</span>)
+                                </div>
+                                <div style="color: #00B0FF;">
+                                    Column 2: <span id="rotating-col2-chars">0</span> chars (max <span id="rotating-col2-max">5</span>)
+                                </div>
+                            </div>
+                            <small style="color: #888; display: block; margin-top: 5px;">
+                                All lines will use this same split position
+                            </small>
+                        </div>
+                        
+                        <label>Column 1 entries (one per line):</label>
+                        <textarea id="input-rotating-col1" rows="4" placeholder="Detroit
+New York
+London" oninput="updateRotatingPreview()"></textarea>
+                        
+                        <label>Column 2 entries (one per line):</label>
+                        <textarea id="input-rotating-col2" rows="4" placeholder="12:45
+01:12
+05:12" oninput="updateRotatingPreview()"></textarea>
+                        
+                        <label>
+                            Split Position: <span id="split-value-rotating" style="color: #FFB000; font-weight: bold;">15</span>
+                            <span style="color: #888; font-size: 0.9em;"> (column 1 gets this many characters)</span>
+                        </label>
+                        <input type="range" id="input-rotating-split" min="5" max="35" value="15" oninput="updateRotatingPreview()" style="width: 100%; margin-bottom: 5px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.75em; color: #666; margin-bottom: 10px;">
+                            <span>5</span>
+                            <span>20</span>
+                            <span>35</span>
+                        </div>
+                    </div>
+                    
+                    <label>Rotation interval (seconds):</label>
+                    <input type="number" id="input-rotating-interval" value="5" min="1" max="60">
+                    
+                    <label>Alignment:</label>
+                    <div class="alignment-buttons">
+                        <button class="secondary" onclick="setAlignment('left')">⬅️ Left</button>
+                        <button class="secondary" onclick="setAlignment('center')">↔️ Center</button>
+                        <button class="secondary" onclick="setAlignment('right')">➡️ Right</button>
+                    </div>
+                </div>
+
+                <!-- Time Settings -->
+                <div class="row-settings" id="settings-time">
+                    <label>Label (optional):</label>
+                    <input type="text" id="input-time-label" placeholder="e.g., New York" oninput="validateTimeSettings()">
+                    
+                    <label>Timezone:</label>
+                    <select id="input-time-timezone">
+                        <option value="America/New_York">New York (ET)</option>
+                        <option value="America/Detroit">Detroit (ET)</option>
+                        <option value="America/Chicago">Chicago (CT)</option>
+                        <option value="America/Denver">Denver (MT)</option>
+                        <option value="America/Los_Angeles">Los Angeles (PT)</option>
+                        <option value="Europe/London">London</option>
+                        <option value="Europe/Paris">Paris</option>
+                        <option value="Asia/Tokyo">Tokyo</option>
+                        <option value="Asia/Shanghai">Shanghai</option>
+                        <option value="Australia/Sydney">Sydney</option>
+                    </select>
+                    
+                    <label>Format:</label>
+                    <select id="input-time-format" onchange="validateTimeSettings()">
+                        <option value="time">Time only (2359)</option>
+                        <option value="date">Date only (SEP 30 2099)</option>
+                        <option value="daydate">Day & Date (WEDNESDAY SEP 30 2099)</option>
+                        <option value="datetime">Date & Time (SEP 30 2359)</option>
+                    </select>
+                    
+                    <div id="time-validation-error" style="display: none; background: rgba(255, 68, 68, 0.2); border: 1px solid #ff4444; border-radius: 4px; padding: 10px; margin: 10px 0; color: #ff6666;">
+                        <strong>⚠️ Error:</strong> Label and time/date will overlap!<br>
+                        <span id="error-details"></span>
+                    </div>
+                    
+                    <label>Label Alignment:</label>
+                    <div class="alignment-buttons" id="label-alignment-buttons">
+                        <button class="secondary" onclick="setLabelAlignment('left')">⬅️ Left</button>
+                        <button class="secondary" onclick="setLabelAlignment('center')">↔️ Center</button>
+                        <button class="secondary" onclick="setLabelAlignment('right')">➡️ Right</button>
+                    </div>
+                </div>
+
+                <!-- Separator Settings -->
+                <div class="row-settings" id="settings-separator">
+                    <p style="color: #888;">A horizontal separator line will be displayed.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary" onclick="deleteCurrentRow()">🗑️ Delete Row</button>
+                <button class="secondary" onclick="closeModal()">Cancel</button>
+                <button onclick="saveRow()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Character set for Solari board
+        const CHAR_SET = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:-.,';
+        
+        // Row types
+        const ROW_TYPES = {
+            STATIC: 'static',
+            ROTATING: 'rotating',
+            TIME: 'time',
+            SEPARATOR: 'separator'
+        };
+
+        // State
+        let rows = [];
+        let updateIntervals = {};
+        let editingRowIndex = null;
+        let currentRowType = 'static';
+        let currentAlignment = 'left';
+        let currentLabelAlignment = 'left';
+
+        // Audio context for flip sounds
+        let audioContext = null;
+
+        // Initialize audio context (lazy loading for browser compatibility)
+        function getAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            return audioContext;
+        }
+
+        // Generate flip-flap sound
+        function playFlipSound() {
+            const soundCheckbox = document.getElementById('soundEnabled');
+            if (!soundCheckbox || !soundCheckbox.checked) return;
+            
+            try {
+                const ctx = getAudioContext();
+                const now = ctx.currentTime;
+                
+                // Create noise buffer for the "clack" sound
+                const bufferSize = ctx.sampleRate * 0.05; // 50ms
+                const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+                
+                // Generate white noise
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+                
+                // Noise source for the "clack"
+                const noise = ctx.createBufferSource();
+                noise.buffer = noiseBuffer;
+                
+                // Filter to shape the noise
+                const noiseFilter = ctx.createBiquadFilter();
+                noiseFilter.type = 'bandpass';
+                noiseFilter.frequency.value = 2000;
+                noiseFilter.Q.value = 1;
+                
+                // Envelope for noise (quick attack/decay)
+                const noiseGain = ctx.createGain();
+                noiseGain.gain.value = 0;
+                noiseGain.gain.setValueAtTime(0, now);
+                noiseGain.gain.linearRampToValueAtTime(0.15, now + 0.005); // Quick attack
+                noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.05); // Quick decay
+                
+                // Low frequency "thump" for mechanical feel
+                const osc = ctx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.value = 100;
+                
+                const oscGain = ctx.createGain();
+                oscGain.gain.value = 0;
+                oscGain.gain.setValueAtTime(0, now);
+                oscGain.gain.linearRampToValueAtTime(0.1, now + 0.01);
+                oscGain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                
+                // Connect noise path
+                noise.connect(noiseFilter);
+                noiseFilter.connect(noiseGain);
+                noiseGain.connect(ctx.destination);
+                
+                // Connect oscillator path
+                osc.connect(oscGain);
+                oscGain.connect(ctx.destination);
+                
+                // Start sounds
+                noise.start(now);
+                noise.stop(now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.08);
+                
+            } catch (e) {
+                console.error('Audio playback error:', e);
+            }
+        }
+
+        // Initialize
+        function init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('config')) {
+                loadFromURL();
+            } else {
+                rows = [
+                    { type: ROW_TYPES.STATIC, text: 'Welcome to NordFlip', align: 'center' },
+                    { type: ROW_TYPES.SEPARATOR },
+                    { type: ROW_TYPES.TIME, timezone: 'America/New_York', label: 'NEW YORK', format: 'time', labelAlign: 'left' },
+                    { type: ROW_TYPES.TIME, timezone: 'Europe/London', label: 'LONDON', format: 'time', labelAlign: 'left' },
+                    { type: ROW_TYPES.TIME, timezone: 'Asia/Tokyo', label: 'TOKYO', format: 'time', labelAlign: 'left' },
+                    { type: ROW_TYPES.SEPARATOR },
+                    { type: ROW_TYPES.ROTATING, messages: ['Have Fun', 'Happy New Year'], interval: 5, align: 'left' },
+                    { type: ROW_TYPES.STATIC, text: 'NEW ROW', align: 'left' }
+                ];
+                generateBoard();
+            }
+        }
+
+        // Toggle advanced panel
+        function toggleAdvanced() {
+            const layout = document.getElementById('layout');
+            const advancedToggle = document.getElementById('advancedToggle');
+            
+            layout.classList.toggle('hide-advanced');
+            advancedToggle.classList.toggle('active');
+        }
+
+        // Modal functions
+        function openModal(index) {
+            editingRowIndex = index;
+            const modal = document.getElementById('editModal');
+            const row = rows[index];
+            
+            // Reset two-column states - safely check if elements exist
+            const staticTwoColCheckbox = document.getElementById('input-static-twocolumn');
+            const rotatingTwoColCheckbox = document.getElementById('input-rotating-twocolumn');
+            
+            if (staticTwoColCheckbox) {
+                staticTwoColCheckbox.checked = false;
+            }
+            if (rotatingTwoColCheckbox) {
+                rotatingTwoColCheckbox.checked = false;
+            }
+            
+            const staticTwoCol = document.getElementById('static-two-column');
+            const staticSingleCol = document.getElementById('static-single-column');
+            const rotatingTwoCol = document.getElementById('rotating-two-column');
+            const rotatingSingleCol = document.getElementById('rotating-single-column');
+            
+            if (staticTwoCol) staticTwoCol.style.display = 'none';
+            if (staticSingleCol) staticSingleCol.style.display = 'block';
+            if (rotatingTwoCol) rotatingTwoCol.style.display = 'none';
+            if (rotatingSingleCol) rotatingSingleCol.style.display = 'block';
+            
+            selectRowType(row.type);
+            
+            if (row.type === ROW_TYPES.STATIC) {
+                if (row.twoColumn && staticTwoColCheckbox) {
+                    staticTwoColCheckbox.checked = true;
+                    document.getElementById('input-static-col1').value = row.col1 || '';
+                    document.getElementById('input-static-col2').value = row.col2 || '';
+                    document.getElementById('input-static-split').value = row.splitPos || 15;
+                    toggleTwoColumnMode('static');
+                } else {
+                    document.getElementById('input-static-text').value = row.text || '';
+                }
+                currentAlignment = row.align || 'left';
+            } else if (row.type === ROW_TYPES.ROTATING) {
+                if (row.twoColumn && rotatingTwoColCheckbox) {
+                    rotatingTwoColCheckbox.checked = true;
+                    document.getElementById('input-rotating-col1').value = (row.col1Array || []).join('\n');
+                    document.getElementById('input-rotating-col2').value = (row.col2Array || []).join('\n');
+                    document.getElementById('input-rotating-split').value = row.splitPos || 15;
+                    toggleTwoColumnMode('rotating');
+                } else {
+                    document.getElementById('input-rotating-messages').value = (row.messages || []).join('\n');
+                }
+                document.getElementById('input-rotating-interval').value = row.interval || 5;
+                currentAlignment = row.align || 'left';
+            } else if (row.type === ROW_TYPES.TIME) {
+                document.getElementById('input-time-label').value = row.label || '';
+                document.getElementById('input-time-timezone').value = row.timezone || 'America/New_York';
+                document.getElementById('input-time-format').value = row.format || 'time';
+                currentLabelAlignment = row.labelAlign || 'left';
+                validateTimeSettings();
+            }
+            
+            updateAlignmentButtons();
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('editModal');
+            modal.classList.remove('show');
+            editingRowIndex = null;
+        }
+
+        function selectRowType(type) {
+            currentRowType = type;
+            
+            // Set default alignments for time type
+            if (type === ROW_TYPES.TIME) {
+                if (currentLabelAlignment === undefined) currentLabelAlignment = 'left';
+                validateTimeSettings();
+            }
+            
+            // Update type selector
+            document.querySelectorAll('.type-option').forEach(opt => {
+                opt.classList.toggle('active', opt.dataset.type === type);
+            });
+            
+            // Show appropriate settings
+            document.querySelectorAll('.row-settings').forEach(settings => {
+                settings.classList.remove('active');
+            });
+            document.getElementById(`settings-${type}`).classList.add('active');
+            
+            // Update alignment buttons
+            updateAlignmentButtons();
+        }
+
+        function setAlignment(align) {
+            currentAlignment = align;
+            updateAlignmentButtons();
+        }
+
+        function setLabelAlignment(align) {
+            currentLabelAlignment = align;
+            updateAlignmentButtons();
+        }
+
+        function getMaxTimeLength(format) {
+            // Return the maximum possible character length for each format
+            if (format === 'time') return 4; // "2359"
+            if (format === 'date') return 11; // "SEP 30 2099"
+            if (format === 'daydate') return 21; // "WEDNESDAY SEP 30 2099"
+            if (format === 'datetime') return 11; // "SEP 30 2359"
+            return 0;
+        }
+
+        function validateTimeSettings() {
+            const label = document.getElementById('input-time-label')?.value || '';
+            const format = document.getElementById('input-time-format')?.value || 'time';
+            const columns = parseInt(document.getElementById('columns')?.value || 20);
+            
+            const errorDiv = document.getElementById('time-validation-error');
+            const errorDetails = document.getElementById('error-details');
+            
+            if (!label || label.trim() === '') {
+                // No label, no problem
+                if (errorDiv) errorDiv.style.display = 'none';
+                return true;
+            }
+            
+            const maxTimeLength = getMaxTimeLength(format);
+            const labelLength = label.trim().length;
+            const totalNeeded = labelLength + maxTimeLength;
+            
+            if (totalNeeded > columns) {
+                // Overlap detected!
+                if (errorDiv) {
+                    errorDiv.style.display = 'block';
+                    errorDetails.textContent = `Label needs ${labelLength} chars + ${maxTimeLength} chars for time = ${totalNeeded} chars total, but board only has ${columns} columns. Either remove the label or increase board width to at least ${totalNeeded} columns.`;
+                }
+                return false;
+            } else {
+                // No overlap
+                if (errorDiv) errorDiv.style.display = 'none';
+                return true;
+            }
+        }
+
+        function updateAlignmentButtons() {
+            // Clear all active states
+            document.querySelectorAll('.alignment-buttons button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            const activeType = currentRowType;
+            
+            if (activeType === 'time') {
+                // Handle label alignment buttons only
+                const labelButtons = document.querySelectorAll('#label-alignment-buttons button');
+                labelButtons.forEach(btn => {
+                    const btnText = btn.textContent.toLowerCase();
+                    if (
+                        (currentLabelAlignment === 'left' && btnText.includes('left')) ||
+                        (currentLabelAlignment === 'center' && btnText.includes('center')) ||
+                        (currentLabelAlignment === 'right' && btnText.includes('right'))
+                    ) {
+                        btn.classList.add('active');
+                    }
+                });
+            } else {
+                // Handle regular alignment for static and rotating
+                const container = document.getElementById(`settings-${activeType}`);
+                if (container) {
+                    const buttons = container.querySelectorAll('.alignment-buttons button');
+                    buttons.forEach(btn => {
+                        const btnText = btn.textContent.toLowerCase();
+                        if (
+                            (currentAlignment === 'left' && btnText.includes('left')) ||
+                            (currentAlignment === 'center' && btnText.includes('center')) ||
+                            (currentAlignment === 'right' && btnText.includes('right'))
+                        ) {
+                            btn.classList.add('active');
+                        }
+                    });
+                }
+            }
+        }
+
+        function toggleTwoColumnMode(type) {
+            const checkbox = document.getElementById(`input-${type}-twocolumn`);
+            const singleCol = document.getElementById(`${type}-single-column`);
+            const twoCol = document.getElementById(`${type}-two-column`);
+            
+            if (checkbox.checked) {
+                singleCol.style.display = 'none';
+                twoCol.style.display = 'block';
+                if (type === 'static') {
+                    updateStaticPreview();
+                } else if (type === 'rotating') {
+                    updateRotatingPreview();
+                }
+            } else {
+                singleCol.style.display = 'block';
+                twoCol.style.display = 'none';
+            }
+        }
+
+        function formatTwoColumnText(col1, col2, splitPos, totalCols) {
+            // Pad or truncate column 1 to split position
+            let column1 = col1.toUpperCase();
+            if (column1.length > splitPos) {
+                column1 = column1.substring(0, splitPos);
+            } else {
+                column1 = column1 + ' '.repeat(splitPos - column1.length);
+            }
+            
+            // Column 2 gets remaining space, right-aligned
+            const col2Space = totalCols - splitPos;
+            let column2 = col2.toUpperCase();
+            if (column2.length > col2Space) {
+                column2 = column2.substring(0, col2Space);
+            } else {
+                column2 = ' '.repeat(col2Space - column2.length) + column2;
+            }
+            
+            return column1 + column2;
+        }
+
+        function generateRuler(totalCols) {
+            let ruler = '';
+            for (let i = 1; i <= totalCols; i++) {
+                if (i % 10 === 0) {
+                    ruler += '0';
+                } else if (i % 5 === 0) {
+                    ruler += '5';
+                } else {
+                    ruler += '·';
+                }
+            }
+            return ruler;
+        }
+
+        function updateStaticPreview() {
+            const col1Input = document.getElementById('input-static-col1').value || '';
+            const col2Input = document.getElementById('input-static-col2').value || '';
+            const splitPos = parseInt(document.getElementById('input-static-split').value);
+            const totalCols = parseInt(document.getElementById('columns').value);
+            
+            // Update split value display
+            document.getElementById('split-value-static').textContent = splitPos;
+            
+            // Update ruler
+            document.getElementById('static-ruler-display').textContent = generateRuler(totalCols);
+            
+            // Format columns
+            let col1Text = col1Input.toUpperCase();
+            let col2Text = col2Input.toUpperCase();
+            
+            // Column 1: pad or truncate to splitPos, left-aligned
+            if (col1Text.length > splitPos) {
+                col1Text = col1Text.substring(0, splitPos);
+            } else {
+                col1Text = col1Text + ' '.repeat(splitPos - col1Text.length);
+            }
+            
+            // Column 2: gets remaining space, right-aligned
+            const col2Space = totalCols - splitPos;
+            if (col2Text.length > col2Space) {
+                col2Text = col2Text.substring(0, col2Space);
+            } else {
+                col2Text = ' '.repeat(col2Space - col2Text.length) + col2Text;
+            }
+            
+            // Update preview displays
+            document.getElementById('static-col1-preview').textContent = col1Text;
+            document.getElementById('static-col2-preview').textContent = col2Text;
+            
+            // Update character counts
+            document.getElementById('static-col1-chars').textContent = col1Input.length;
+            document.getElementById('static-col1-max').textContent = splitPos;
+            document.getElementById('static-col2-chars').textContent = col2Input.length;
+            document.getElementById('static-col2-max').textContent = col2Space;
+            
+            // Update split line position (using ch units for monospace)
+            const splitLinePos = 8 + (splitPos * 0.6); // 8px padding + character width
+            document.getElementById('static-split-line').style.left = `${splitLinePos}ch`;
+            
+            // Color code if over limit
+            const col1CharsSpan = document.getElementById('static-col1-chars');
+            const col2CharsSpan = document.getElementById('static-col2-chars');
+            col1CharsSpan.style.color = col1Input.length > splitPos ? '#ff4444' : '#FFB000';
+            col2CharsSpan.style.color = col2Input.length > col2Space ? '#ff4444' : '#00B0FF';
+        }
+
+        function updateRotatingPreview() {
+            const col1Lines = document.getElementById('input-rotating-col1').value.split('\n').filter(l => l.trim());
+            const col2Lines = document.getElementById('input-rotating-col2').value.split('\n').filter(l => l.trim());
+            const splitPos = parseInt(document.getElementById('input-rotating-split').value);
+            const totalCols = parseInt(document.getElementById('columns').value);
+            
+            // Update split value display
+            document.getElementById('split-value-rotating').textContent = splitPos;
+            
+            // Update ruler
+            document.getElementById('rotating-ruler-display').textContent = generateRuler(totalCols);
+            
+            // Use first line for preview
+            const col1Input = col1Lines[0] || '';
+            const col2Input = col2Lines[0] || '';
+            
+            // Format columns
+            let col1Text = col1Input.toUpperCase();
+            let col2Text = col2Input.toUpperCase();
+            
+            // Column 1: pad or truncate to splitPos, left-aligned
+            if (col1Text.length > splitPos) {
+                col1Text = col1Text.substring(0, splitPos);
+            } else {
+                col1Text = col1Text + ' '.repeat(splitPos - col1Text.length);
+            }
+            
+            // Column 2: gets remaining space, right-aligned
+            const col2Space = totalCols - splitPos;
+            if (col2Text.length > col2Space) {
+                col2Text = col2Text.substring(0, col2Space);
+            } else {
+                col2Text = ' '.repeat(col2Space - col2Text.length) + col2Text;
+            }
+            
+            // Update preview displays
+            document.getElementById('rotating-col1-preview').textContent = col1Text;
+            document.getElementById('rotating-col2-preview').textContent = col2Text;
+            
+            // Update character counts
+            document.getElementById('rotating-col1-chars').textContent = col1Input.length;
+            document.getElementById('rotating-col1-max').textContent = splitPos;
+            document.getElementById('rotating-col2-chars').textContent = col2Input.length;
+            document.getElementById('rotating-col2-max').textContent = col2Space;
+            
+            // Update split line position
+            const splitLinePos = 8 + (splitPos * 0.6);
+            document.getElementById('rotating-split-line').style.left = `${splitLinePos}ch`;
+            
+            // Color code if over limit
+            const col1CharsSpan = document.getElementById('rotating-col1-chars');
+            const col2CharsSpan = document.getElementById('rotating-col2-chars');
+            col1CharsSpan.style.color = col1Input.length > splitPos ? '#ff4444' : '#FFB000';
+            col2CharsSpan.style.color = col2Input.length > col2Space ? '#ff4444' : '#00B0FF';
+        }
+
+        function updateAllPreviews() {
+            // Update both previews if they exist (in case modal is open)
+            if (document.getElementById('static-col1-preview')) {
+                updateStaticPreview();
+            }
+            if (document.getElementById('rotating-col1-preview')) {
+                updateRotatingPreview();
+            }
+        }
+
+        function saveRow() {
+            const newRow = { type: currentRowType };
+            
+            if (currentRowType === ROW_TYPES.STATIC) {
+                const twoColumnCheckbox = document.getElementById('input-static-twocolumn');
+                const twoColumnEnabled = twoColumnCheckbox ? twoColumnCheckbox.checked : false;
+                
+                if (twoColumnEnabled) {
+                    newRow.twoColumn = true;
+                    newRow.col1 = document.getElementById('input-static-col1').value;
+                    newRow.col2 = document.getElementById('input-static-col2').value;
+                    newRow.splitPos = parseInt(document.getElementById('input-static-split').value);
+                } else {
+                    newRow.text = document.getElementById('input-static-text').value;
+                }
+                newRow.align = currentAlignment;
+            } else if (currentRowType === ROW_TYPES.ROTATING) {
+                const twoColumnCheckbox = document.getElementById('input-rotating-twocolumn');
+                const twoColumnEnabled = twoColumnCheckbox ? twoColumnCheckbox.checked : false;
+                
+                if (twoColumnEnabled) {
+                    newRow.twoColumn = true;
+                    const col1Lines = document.getElementById('input-rotating-col1').value.split('\n').filter(m => m.trim());
+                    const col2Lines = document.getElementById('input-rotating-col2').value.split('\n').filter(m => m.trim());
+                    newRow.col1Array = col1Lines;
+                    newRow.col2Array = col2Lines;
+                    newRow.splitPos = parseInt(document.getElementById('input-rotating-split').value);
+                    // Combine into messages for display
+                    newRow.messages = [];
+                    const maxLength = Math.max(col1Lines.length, col2Lines.length);
+                    for (let i = 0; i < maxLength; i++) {
+                        const c1 = col1Lines[i] || '';
+                        const c2 = col2Lines[i] || '';
+                        newRow.messages.push({ col1: c1, col2: c2 });
+                    }
+                } else {
+                    const messagesText = document.getElementById('input-rotating-messages').value;
+                    newRow.messages = messagesText.split('\n').filter(m => m.trim());
+                }
+                newRow.interval = parseInt(document.getElementById('input-rotating-interval').value);
+                newRow.align = currentAlignment;
+            } else if (currentRowType === ROW_TYPES.TIME) {
+                // Validate before saving
+                if (!validateTimeSettings()) {
+                    alert('Cannot save: Label and time/date will overlap. Please remove the label or increase board width.');
+                    return;
+                }
+                
+                newRow.label = document.getElementById('input-time-label').value;
+                newRow.timezone = document.getElementById('input-time-timezone').value;
+                newRow.format = document.getElementById('input-time-format').value;
+                newRow.labelAlign = currentLabelAlignment;
+            }
+            
+            rows[editingRowIndex] = newRow;
+            closeModal();
+            generateBoard();
+        }
+
+        function deleteCurrentRow() {
+            // Delete immediately without confirmation
+            rows.splice(editingRowIndex, 1);
+            closeModal();
+            generateBoard();
+        }
+
+        // NEW: Quick delete function for inline buttons
+        function quickDeleteRow(index, event) {
+            // Stop event from bubbling to row click
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+            }
+            
+            // Delete immediately without confirmation
+            rows.splice(index, 1);
+            generateBoard();
+            
+            return false;
+        }
+
+        function addRowSimple() {
+            rows.push({ type: ROW_TYPES.STATIC, text: 'NEW ROW', align: 'left' });
+            generateBoard();
+            // Open editor for new row
+            setTimeout(() => openModal(rows.length - 1), 100);
+        }
+
+        function insertRowAt(index) {
+            // Insert a new row at the specified position
+            rows.splice(index, 0, { type: ROW_TYPES.STATIC, text: 'NEW ROW', align: 'left' });
+            generateBoard();
+            // Open editor for the newly inserted row
+            setTimeout(() => openModal(index), 100);
+        }
+
+        // Helper functions
+        function getCharIndex(char) {
+            const index = CHAR_SET.indexOf(char.toUpperCase());
+            return index === -1 ? 0 : index;
+        }
+
+        function padText(text, length, align = 'left') {
+            text = text.toUpperCase();
+            if (text.length >= length) return text.substring(0, length);
+            
+            const padding = length - text.length;
+            if (align === 'left') {
+                return text + ' '.repeat(padding);
+            } else if (align === 'right') {
+                return ' '.repeat(padding) + text;
+            } else {
+                const leftPad = Math.floor(padding / 2);
+                const rightPad = padding - leftPad;
+                return ' '.repeat(leftPad) + text + ' '.repeat(rightPad);
+            }
+        }
+
+        function createFlaps(text, container) {
+            container.innerHTML = '';
+            for (let char of text) {
+                const flap = document.createElement('div');
+                const upperChar = char.toUpperCase();
+                
+                flap.className = char === ' ' ? 'flap space' : 'flap';
+                flap.textContent = char === ' ' ? '' : upperChar;
+                flap.dataset.currentChar = upperChar;
+                container.appendChild(flap);
+            }
+        }
+
+        function updateFlap(flap, newChar) {
+            newChar = newChar.toUpperCase();
+            const currentChar = flap.dataset.currentChar || ' ';
+            
+            if (currentChar === newChar) return;
+            
+            const currentIndex = getCharIndex(currentChar);
+            const newIndex = getCharIndex(newChar);
+            
+            let distance = newIndex - currentIndex;
+            if (distance < 0) distance += CHAR_SET.length;
+            
+            const backwardDistance = CHAR_SET.length - distance;
+            const forward = distance <= backwardDistance;
+            const steps = forward ? distance : backwardDistance;
+            
+            if (steps === 0) return;
+            
+            const stepDuration = parseInt(document.getElementById('flipSpeed')?.value || 50);
+            let currentStep = 0;
+            
+            const animate = () => {
+                if (currentStep >= steps) {
+                    flap.dataset.currentChar = newChar;
+                    return;
+                }
+                
+                let nextIndex;
+                if (forward) {
+                    nextIndex = (currentIndex + currentStep + 1) % CHAR_SET.length;
+                } else {
+                    nextIndex = (currentIndex - currentStep - 1 + CHAR_SET.length) % CHAR_SET.length;
+                }
+                
+                const nextChar = CHAR_SET[nextIndex];
+                
+                // Play flip sound
+                playFlipSound();
+                
+                flap.classList.add('flipping');
+                setTimeout(() => {
+                    flap.textContent = nextChar === ' ' ? '' : nextChar;
+                    flap.classList.remove('flipping');
+                }, 150);
+                
+                currentStep++;
+                setTimeout(animate, stepDuration);
+            };
+            
+            animate();
+        }
+
+        function formatTime(timezone, format, label = '', labelAlign = 'left') {
+            const now = new Date();
+            const columns = parseInt(document.getElementById('columns').value);
+            
+            // Determine the maximum possible length for this format
+            let maxTimeLength;
+            let timeValue;
+            
+            if (format === 'time') {
+                maxTimeLength = 4; // "2359"
+                timeValue = now.toLocaleTimeString('en-US', {
+                    timeZone: timezone,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                }).replace(':', '');
+            } else if (format === 'date') {
+                maxTimeLength = 11; // "SEP 30 2099"
+                const month = now.toLocaleDateString('en-US', { timeZone: timezone, month: 'short' }).toUpperCase();
+                const day = now.toLocaleDateString('en-US', { timeZone: timezone, day: 'numeric' });
+                const year = now.toLocaleDateString('en-US', { timeZone: timezone, year: 'numeric' });
+                timeValue = `${month} ${day} ${year}`;
+            } else if (format === 'daydate') {
+                maxTimeLength = 21; // "WEDNESDAY SEP 30 2099"
+                const dayOfWeek = now.toLocaleDateString('en-US', { timeZone: timezone, weekday: 'long' }).toUpperCase();
+                const month = now.toLocaleDateString('en-US', { timeZone: timezone, month: 'short' }).toUpperCase();
+                const day = now.toLocaleDateString('en-US', { timeZone: timezone, day: 'numeric' });
+                const year = now.toLocaleDateString('en-US', { timeZone: timezone, year: 'numeric' });
+                timeValue = `${dayOfWeek} ${month} ${day} ${year}`;
+            } else if (format === 'datetime') {
+                maxTimeLength = 11; // "SEP 30 2359"
+                const date = now.toLocaleDateString('en-US', { timeZone: timezone, month: 'short', day: 'numeric' }).toUpperCase();
+                const time = now.toLocaleTimeString('en-US', {
+                    timeZone: timezone,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                }).replace(':', '');
+                timeValue = `${date} ${time}`;
+            }
+            
+            // If no label, just format the time value aligned right
+            if (!label || label.trim() === '') {
+                return padText(timeValue, columns, 'right');
+            }
+            
+            // With label: reserve space for time, use remaining for label
+            const timeSpace = Math.min(maxTimeLength, columns - 2); // Reserve space for time
+            const labelSpace = columns - timeSpace;
+            
+            // Format the time value in its reserved space (always right-aligned)
+            let formattedTime = padText(timeValue, timeSpace, 'right');
+            
+            // Format the label in its space
+            let formattedLabel = padText(label.toUpperCase(), labelSpace, labelAlign);
+            
+            // Combine them
+            return formattedLabel + formattedTime;
+        }
+
+        function generateBoard() {
+            // Clear existing intervals
+            Object.values(updateIntervals).forEach(interval => clearInterval(interval));
+            updateIntervals = {};
+
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            
+            const columns = parseInt(document.getElementById('columns').value);
+            const flapWidth = parseInt(document.getElementById('flapWidth').value);
+            const flapHeight = parseInt(document.getElementById('flapHeight').value);
+            
+            // Update CSS
+            const style = document.createElement('style');
+            style.textContent = `
+                .display-row { grid-template-columns: repeat(${columns}, ${flapWidth}px); }
+                .flap { width: ${flapWidth}px; height: ${flapHeight}px; font-size: ${flapWidth * 0.05}em; }
+            `;
+            document.head.appendChild(style);
+
+            // Add insert button at the very top (to insert before first row)
+            if (rows.length > 0) {
+                const insertBtnTop = document.createElement('button');
+                insertBtnTop.className = 'insert-row-btn insert-row-btn-top';
+                insertBtnTop.innerHTML = '+';
+                insertBtnTop.title = 'Insert row at top';
+                insertBtnTop.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    insertRowAt(0);
+                }, true);
+                board.appendChild(insertBtnTop);
+            }
+
+            rows.forEach((row, rowIndex) => {
+                if (row.type === ROW_TYPES.SEPARATOR) {
+                    const sepContainer = document.createElement('div');
+                    sepContainer.className = 'separator-container';
+                    
+                    const sep = document.createElement('div');
+                    sep.className = 'separator';
+                    sep.onclick = () => openModal(rowIndex);
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-row-btn';
+                    deleteBtn.innerHTML = '−';
+                    deleteBtn.title = 'Delete row';
+                    deleteBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        quickDeleteRow(rowIndex, e);
+                    }, true);
+                    
+                    sepContainer.appendChild(sep);
+                    sepContainer.appendChild(deleteBtn);
+                    board.appendChild(sepContainer);
+                } else {
+                    const rowContainer = document.createElement('div');
+                    rowContainer.className = 'row-container';
+                    
+                    const rowDiv = document.createElement('div');
+                    rowDiv.className = 'display-row';
+                    rowDiv.id = `row-${rowIndex}`;
+                    rowDiv.onclick = () => openModal(rowIndex);
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-row-btn';
+                    deleteBtn.innerHTML = '−';
+                    deleteBtn.title = 'Delete row';
+                    deleteBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        quickDeleteRow(rowIndex, e);
+                    }, true);
+                    
+                    rowContainer.appendChild(rowDiv);
+                    rowContainer.appendChild(deleteBtn);
+                    board.appendChild(rowContainer);
+
+                    if (row.type === ROW_TYPES.STATIC) {
+                        let text;
+                        if (row.twoColumn) {
+                            text = formatTwoColumnText(row.col1 || '', row.col2 || '', row.splitPos || 15, columns);
+                        } else {
+                            text = padText(row.text || '', columns, row.align);
+                        }
+                        createFlaps(text, rowDiv);
+                    } else if (row.type === ROW_TYPES.ROTATING) {
+                        const messages = row.messages || [''];
+                        let currentIndex = 0;
+                        
+                        const updateRotating = () => {
+                            let text;
+                            const msg = messages[currentIndex];
+                            
+                            if (row.twoColumn && typeof msg === 'object') {
+                                text = formatTwoColumnText(msg.col1 || '', msg.col2 || '', row.splitPos || 15, columns);
+                            } else {
+                                text = padText(typeof msg === 'string' ? msg : '', columns, row.align);
+                            }
+                            
+                            const flaps = rowDiv.children;
+                            if (flaps.length === 0) {
+                                createFlaps(text, rowDiv);
+                            } else {
+                                for (let i = 0; i < text.length && i < flaps.length; i++) {
+                                    updateFlap(flaps[i], text[i]);
+                                }
+                            }
+                            currentIndex = (currentIndex + 1) % messages.length;
+                        };
+                        
+                        updateRotating();
+                        updateIntervals[rowIndex] = setInterval(updateRotating, (row.interval || 5) * 1000);
+                    } else if (row.type === ROW_TYPES.TIME) {
+                        const updateTime = () => {
+                            const text = formatTime(
+                                row.timezone, 
+                                row.format, 
+                                row.label || '', 
+                                row.labelAlign || 'left'
+                            );
+                            
+                            const flaps = rowDiv.children;
+                            if (flaps.length === 0) {
+                                createFlaps(text, rowDiv);
+                            } else {
+                                for (let i = 0; i < text.length && i < flaps.length; i++) {
+                                    updateFlap(flaps[i], text[i]);
+                                }
+                            }
+                        };
+                        
+                        updateTime();
+                        updateIntervals[rowIndex] = setInterval(updateTime, 1000);
+                    }
+                }
+                
+                // Add insert button after each row (except the last one - it gets the main add button)
+                if (rowIndex < rows.length - 1) {
+                    const insertBtn = document.createElement('button');
+                    insertBtn.className = 'insert-row-btn';
+                    insertBtn.innerHTML = '+';
+                    insertBtn.title = 'Insert row here';
+                    insertBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        insertRowAt(rowIndex + 1);
+                    }, true);
+                    board.appendChild(insertBtn);
+                }
+            });
+            
+            // Add the circular "Add Row" button at the end
+            const addRowBtn = document.createElement('button');
+            addRowBtn.className = 'add-row-circle-btn';
+            addRowBtn.innerHTML = '+';
+            addRowBtn.onclick = addRowSimple;
+            addRowBtn.title = 'Add new row';
+            board.appendChild(addRowBtn);
+        }
+
+        function validateAllRows() {
+            // Placeholder for validation
+            return true;
+        }
+
+        // URL functions
+        function generateURL() {
+            // Creates a FINAL shareable URL (no preview parameter)
+            // This URL shows a completely clean board with no back button
+            const config = {
+                columns: parseInt(document.getElementById('columns').value),
+                flapWidth: parseInt(document.getElementById('flapWidth').value),
+                flapHeight: parseInt(document.getElementById('flapHeight').value),
+                flipSpeed: parseInt(document.getElementById('flipSpeed').value),
+                soundEnabled: document.getElementById('soundEnabled')?.checked ?? true,
+                rows: rows
+            };
+            
+            const encoded = btoa(JSON.stringify(config));
+            // No preview parameter - this is the final shareable URL
+            const url = `${window.location.origin}${window.location.pathname}?config=${encoded}`;
+            
+            document.getElementById('url-display').textContent = url;
+            document.getElementById('url-section').classList.add('show');
+        }
+
+        function loadFromURL() {
+            // Two modes:
+            // 1. ?config=... (final shareable) - Clean board, no back button
+            // 2. ?config=...&preview=true (preview) - Clean board WITH back button
+            const urlParams = new URLSearchParams(window.location.search);
+            const configParam = urlParams.get('config');
+            const isPreview = urlParams.get('preview') === 'true';
+            
+            if (configParam) {
+                try {
+                    const config = JSON.parse(atob(configParam));
+                    document.getElementById('columns').value = config.columns || 20;
+                    document.getElementById('flapWidth').value = config.flapWidth || 60;
+                    document.getElementById('flapHeight').value = config.flapHeight || 80;
+                    document.getElementById('flipSpeed').value = config.flipSpeed || 50;
+                    if (document.getElementById('soundEnabled')) {
+                        document.getElementById('soundEnabled').checked = config.soundEnabled ?? true;
+                    }
+                    rows = config.rows || [];
+                    
+                    generateBoard();
+                    
+                    // Hide ALL UI - board only
+                    const h1 = document.querySelector('h1');
+                    if (h1) h1.style.display = 'none';
+                    document.querySelector('.layout').style.display = 'none';
+                    document.querySelector('.url-section').style.display = 'none';
+                    
+                    const board = document.getElementById('board');
+                    const container = document.querySelector('.container');
+                    
+                    // Show only board
+                    container.innerHTML = '';
+                    container.appendChild(board);
+                    container.style.display = 'flex';
+                    container.style.justifyContent = 'center';
+                    container.style.alignItems = 'center';
+                    container.style.minHeight = '100vh';
+                    
+                    board.style.margin = '0';
+                    
+                    // Remove click handlers and all interactive elements in URL view
+                    document.querySelectorAll('.display-row, .separator').forEach(el => {
+                        el.style.cursor = 'default';
+                        el.style.pointerEvents = 'none';
+                        el.onclick = null;
+                        el.removeAttribute('onclick');
+                        // Remove hover effect
+                        el.style.transform = 'none';
+                    });
+                    
+                    // Remove all edit hints
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        .display-row::after { 
+                            display: none !important; 
+                            opacity: 0 !important;
+                            content: '' !important;
+                        }
+                        .display-row:hover { 
+                            transform: none !important; 
+                            cursor: default !important;
+                        }
+                        .display-row {
+                            cursor: default !important;
+                        }
+                        .separator {
+                            cursor: default !important;
+                        }
+                        .separator:hover {
+                            height: 2px !important;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                    
+                    // Hide delete and add buttons
+                    document.querySelectorAll('.delete-row-btn').forEach(btn => {
+                        btn.style.display = 'none';
+                    });
+                    document.querySelectorAll('.add-row-circle-btn').forEach(btn => {
+                        btn.style.display = 'none';
+                    });
+                    document.querySelectorAll('.insert-row-btn').forEach(btn => {
+                        btn.style.display = 'none';
+                    });
+                    
+                    // Only show back to designer link if in preview mode
+                    if (isPreview) {
+                        document.getElementById('backToDesigner').classList.add('show');
+                    }
+                    
+                } catch (e) {
+                    console.error('Failed to load configuration from URL', e);
+                }
+            }
+        }
+
+        function copyURL() {
+            const url = document.getElementById('url-display').textContent;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('URL copied to clipboard!');
+            });
+        }
+
+        function openInNewTab() {
+            const url = document.getElementById('url-display').textContent;
+            window.open(url, '_blank');
+        }
+
+        function previewBoard() {
+            // Creates a PREVIEW URL (with preview=true parameter)
+            // This URL shows the board with a "Back to Designer" link
+            const config = {
+                columns: parseInt(document.getElementById('columns').value),
+                flapWidth: parseInt(document.getElementById('flapWidth').value),
+                flapHeight: parseInt(document.getElementById('flapHeight').value),
+                flipSpeed: parseInt(document.getElementById('flipSpeed').value),
+                soundEnabled: document.getElementById('soundEnabled')?.checked ?? true,
+                rows: rows
+            };
+            
+            const encoded = btoa(JSON.stringify(config));
+            // Add preview=true parameter to show back button
+            const url = `${window.location.origin}${window.location.pathname}?config=${encoded}&preview=true`;
+            
+            // Navigate to the preview URL
+            window.location.href = url;
+        }
+
+        function returnToDesigner() {
+            // Navigate back to the designer (URL without config parameter)
+            window.location.href = `${window.location.origin}${window.location.pathname}`;
+        }
+
+        // Close modal on ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
