@@ -205,8 +205,8 @@
             box-shadow: 0 2px 8px rgba(92, 184, 92, 0.3);
             transition: all 0.2s;
             position: relative;
-            margin: 30px auto 0 0;
-            margin-left: -50px;
+            left: -50px;
+            margin: 30px 0 0 0;
         }
 
         .add-row-circle-btn:hover {
@@ -216,8 +216,12 @@
             box-shadow: 0 4px 12px rgba(92, 184, 92, 0.5);
         }
 
-        /* Insert Row Buttons (appear between rows) */
+        /* Insert Row Buttons (appear on left of each row) */
         .insert-row-btn {
+            position: absolute;
+            left: -50px;
+            top: 50%;
+            transform: translateY(-50%);
             width: 32px;
             height: 32px;
             border-radius: 50%;
@@ -229,31 +233,25 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            opacity: 0;
+            transition: all 0.2s;
             padding: 0;
             line-height: 1;
             box-shadow: 0 2px 8px rgba(92, 184, 92, 0.3);
-            transition: all 0.2s;
-            opacity: 0;
-            position: relative;
-            margin: 10px 0 10px auto;
-            margin-right: -50px;
         }
 
         .insert-row-btn:hover {
             background: #4cae4c;
             border-color: #5cb85c;
-            transform: scale(1.1);
+            transform: translateY(-50%) scale(1.1);
             box-shadow: 0 4px 12px rgba(92, 184, 92, 0.5);
         }
 
-        .row-container:hover + .insert-row-btn,
-        .separator-container:hover + .insert-row-btn,
-        .insert-row-btn:hover {
+        .row-container:hover .insert-row-btn {
             opacity: 1;
         }
 
-        .insert-row-btn-top:hover,
-        .solari-board:hover .insert-row-btn-top {
+        .separator-container:hover .insert-row-btn {
             opacity: 1;
         }
 
@@ -600,8 +598,16 @@
             <div class="preview-section">
                 <div class="solari-board" id="board"></div>
                 <div class="add-row-button">
-                    <button class="secondary" onclick="generateURL()">💾 Save</button>
-                    <button class="secondary" onclick="previewBoard()">👁️ Preview</button>
+                    <div style="margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div style="text-align: center;">
+                            <button class="secondary" onclick="generateURL()" style="width: 100%; margin-bottom: 8px;">Generate Final</button>
+                            <small style="color: #999; display: block; line-height: 1.3;">Non-editable board for sharing. Cannot be modified later.</small>
+                        </div>
+                        <div style="text-align: center;">
+                            <button class="secondary" onclick="previewBoard()" style="width: 100%; margin-bottom: 8px;">Preview and Save</button>
+                            <small style="color: #FFB000; display: block; line-height: 1.3;">Generates an editable link you can return to and modify.</small>
+                        </div>
+                    </div>
                     <button class="secondary" id="advancedToggle" onclick="toggleAdvanced()">⚙️ Advanced</button>
                 </div>
             </div>
@@ -981,13 +987,13 @@ London" oninput="updateRotatingPreview()"></textarea>
             } else {
                 rows = [
                     { type: ROW_TYPES.STATIC, text: 'Welcome to NordFlip', align: 'center' },
+                    { type: ROW_TYPES.ROTATING, messages: ['Click to edit', 'try adding a message', 'save for final URL'], interval: 5, align: 'left' },
                     { type: ROW_TYPES.SEPARATOR },
                     { type: ROW_TYPES.TIME, timezone: 'America/New_York', label: 'NEW YORK', format: 'time', labelAlign: 'left' },
                     { type: ROW_TYPES.TIME, timezone: 'Europe/London', label: 'LONDON', format: 'time', labelAlign: 'left' },
                     { type: ROW_TYPES.TIME, timezone: 'Asia/Tokyo', label: 'TOKYO', format: 'time', labelAlign: 'left' },
                     { type: ROW_TYPES.SEPARATOR },
-                    { type: ROW_TYPES.ROTATING, messages: ['Have Fun', 'Happy New Year'], interval: 5, align: 'left' },
-                    { type: ROW_TYPES.STATIC, text: 'NEW ROW', align: 'left' }
+                    { type: ROW_TYPES.ROTATING, messages: ['Have Fun', 'Happy New Year'], interval: 5, align: 'left' }
                 ];
                 generateBoard();
             }
@@ -1646,6 +1652,19 @@ London" oninput="updateRotatingPreview()"></textarea>
                     sep.className = 'separator';
                     sep.onclick = () => openModal(rowIndex);
                     
+                    // Add insert button (left side)
+                    const insertBtn = document.createElement('button');
+                    insertBtn.className = 'insert-row-btn';
+                    insertBtn.innerHTML = '+';
+                    insertBtn.title = 'Insert row after this one';
+                    insertBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        insertRowAt(rowIndex + 1);
+                    }, true);
+                    
+                    // Add delete button (right side)
                     const deleteBtn = document.createElement('button');
                     deleteBtn.className = 'delete-row-btn';
                     deleteBtn.innerHTML = '−';
@@ -1657,6 +1676,7 @@ London" oninput="updateRotatingPreview()"></textarea>
                         quickDeleteRow(rowIndex, e);
                     }, true);
                     
+                    sepContainer.appendChild(insertBtn);
                     sepContainer.appendChild(sep);
                     sepContainer.appendChild(deleteBtn);
                     board.appendChild(sepContainer);
@@ -1669,6 +1689,19 @@ London" oninput="updateRotatingPreview()"></textarea>
                     rowDiv.id = `row-${rowIndex}`;
                     rowDiv.onclick = () => openModal(rowIndex);
                     
+                    // Add insert button (left side)
+                    const insertBtn = document.createElement('button');
+                    insertBtn.className = 'insert-row-btn';
+                    insertBtn.innerHTML = '+';
+                    insertBtn.title = 'Insert row after this one';
+                    insertBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        insertRowAt(rowIndex + 1);
+                    }, true);
+                    
+                    // Add delete button (right side)
                     const deleteBtn = document.createElement('button');
                     deleteBtn.className = 'delete-row-btn';
                     deleteBtn.innerHTML = '−';
@@ -1680,6 +1713,7 @@ London" oninput="updateRotatingPreview()"></textarea>
                         quickDeleteRow(rowIndex, e);
                     }, true);
                     
+                    rowContainer.appendChild(insertBtn);
                     rowContainer.appendChild(rowDiv);
                     rowContainer.appendChild(deleteBtn);
                     board.appendChild(rowContainer);
@@ -1742,20 +1776,6 @@ London" oninput="updateRotatingPreview()"></textarea>
                         updateIntervals[rowIndex] = setInterval(updateTime, 1000);
                     }
                 }
-                
-                // Add insert button after each row (except the last one - it gets the main add button)
-                if (rowIndex < rows.length - 1) {
-                    const insertBtn = document.createElement('button');
-                    insertBtn.className = 'insert-row-btn';
-                    insertBtn.innerHTML = '+';
-                    insertBtn.title = 'Insert row here';
-                    insertBtn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        insertRowAt(rowIndex + 1);
-                    }, true);
-                    board.appendChild(insertBtn);
-                }
             });
             
             // Add the circular "Add Row" button at the end
@@ -1790,16 +1810,30 @@ London" oninput="updateRotatingPreview()"></textarea>
             const url = `${window.location.origin}${window.location.pathname}?config=${encoded}`;
             
             document.getElementById('url-display').textContent = url;
-            document.getElementById('url-section').classList.add('show');
+            
+            // Update messaging for final URL
+            const urlSection = document.getElementById('url-section');
+            const heading = urlSection.querySelector('h3');
+            const description = urlSection.querySelector('p');
+            
+            if (heading) heading.textContent = 'Final Board Generated!';
+            if (description) {
+                description.style.color = '#888';
+                description.textContent = '⚠️ Non-editable version for sharing only. This board cannot be modified later.';
+            }
+            
+            urlSection.classList.add('show');
         }
 
         function loadFromURL() {
-            // Two modes:
+            // Three modes:
             // 1. ?config=... (final shareable) - Clean board, no back button
             // 2. ?config=...&preview=true (preview) - Clean board WITH back button
+            // 3. ?config=...&edit=true (edit after preview) - Show editor with preview URL displayed
             const urlParams = new URLSearchParams(window.location.search);
             const configParam = urlParams.get('config');
             const isPreview = urlParams.get('preview') === 'true';
+            const isEdit = urlParams.get('edit') === 'true';
             
             if (configParam) {
                 try {
@@ -1815,7 +1849,35 @@ London" oninput="updateRotatingPreview()"></textarea>
                     
                     generateBoard();
                     
-                    // Hide ALL UI - board only
+                    // If edit mode, show the editor with the preview URL
+                    if (isEdit) {
+                        // Generate the preview URL
+                        const encoded = btoa(JSON.stringify(config));
+                        const previewUrl = `${window.location.origin}${window.location.pathname}?config=${encoded}&preview=true`;
+                        
+                        // Show the URL section with a message
+                        document.getElementById('url-display').textContent = previewUrl;
+                        
+                        // Update messaging for editable version
+                        const urlSection = document.getElementById('url-section');
+                        const heading = urlSection.querySelector('h3');
+                        const description = urlSection.querySelector('p');
+                        
+                        if (heading) heading.textContent = 'Editable Board Link';
+                        if (description) {
+                            description.style.color = '#FFB000';
+                            description.style.fontWeight = 'bold';
+                            description.textContent = '✓ This link can be modified! Save it to return and edit this board anytime.';
+                        }
+                        
+                        urlSection.classList.add('show');
+                        
+                        // Clean up URL to remove edit parameter
+                        window.history.replaceState({}, '', `${window.location.origin}${window.location.pathname}`);
+                        return;
+                    }
+                    
+                    // Hide ALL UI - board only (for preview or final view)
                     const h1 = document.querySelector('h1');
                     if (h1) h1.style.display = 'none';
                     document.querySelector('.layout').style.display = 'none';
@@ -1923,8 +1985,14 @@ London" oninput="updateRotatingPreview()"></textarea>
         }
 
         function returnToDesigner() {
-            // Navigate back to the designer (URL without config parameter)
-            window.location.href = `${window.location.origin}${window.location.pathname}`;
+            // Get the current config parameter and navigate back with it, marking we're returning from preview
+            const urlParams = new URLSearchParams(window.location.search);
+            const configParam = urlParams.get('config');
+            if (configParam) {
+                window.location.href = `${window.location.origin}${window.location.pathname}?config=${configParam}&edit=true`;
+            } else {
+                window.location.href = `${window.location.origin}${window.location.pathname}`;
+            }
         }
 
         // Close modal on ESC
