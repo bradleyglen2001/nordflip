@@ -1,5 +1,5 @@
 NordFlip
-Create beautiful split-flap displays in your browser. Inspired by Gare Du Nord station. 
+Create split-flap displays in your browser. Inspired by Gare Du Nord station. 
 
 Design custom departure boards, message displays, or decorative boards with the nostalgic aesthetic of mechanical flip displays.
 
