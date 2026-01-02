@@ -3,7 +3,7 @@ Create beautiful split-flap displays in your browser. Inspired by Gare Du Nord s
 
 Design custom departure boards, message displays, or decorative boards with the nostalgic aesthetic of mechanical flip displays.
 
-nordflip.com
+[nordflip.com](https://www.nordflip.com)
 
 <img width="1175" height="655" alt="image" src="https://github.com/user-attachments/assets/8b108e7c-a227-403a-ba9a-19991379a101" />
 
